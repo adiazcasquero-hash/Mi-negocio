@@ -27,8 +27,8 @@
 
     /* Containers */
     .container { padding: 14px; max-width: 600px; margin: 0 auto; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .tab-content { display: none !important; }
+    .tab-content.active { display: block !important; }
 
     /* Cards & Forms */
     .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); }
@@ -264,7 +264,7 @@
 
   </div>
 
-  <!-- NAVEGACIÓN INFERIOR (Optimizada con pointerdown para móvil) -->
+  <!-- NAVEGACIÓN INFERIOR -->
   <nav>
     <button type="button" class="nav-btn active" data-tab="ventas" data-title="Caja y Ventas">
       <span class="icon">💰</span>
@@ -326,18 +326,16 @@
     function actualizarTodo() {
       renderSelectProductos();
       renderMovimientosHoy();
-      // Solo actualizamos inventario y resumen si estamos en esas pestañas o en segundo plano seguro
       renderInventario();
       renderResumen();
     }
 
-    // Configuración ultra rápida de pestañas para móviles y APKs
     document.addEventListener('DOMContentLoaded', () => {
       cargarDB();
 
       const botonesNav = document.querySelectorAll('.nav-btn');
       botonesNav.forEach(btn => {
-        btn.addEventListener('pointerdown', (e) => {
+        btn.addEventListener('click', (e) => {
           e.preventDefault();
           const tabId = btn.getAttribute('data-tab');
           const titulo = btn.getAttribute('data-title');
@@ -347,12 +345,20 @@
     });
 
     function cambiarTab(tabId, titulo, elemento) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      // Ocultar todas las pestañas de forma absoluta
+      document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = 'none';
+      });
+      
+      // Quitar la clase active de los botones
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
       
+      // Mostrar la pestaña seleccionada a la fuerza
       const targetTab = document.getElementById('tab-' + tabId);
       if (targetTab) {
         targetTab.classList.add('active');
+        targetTab.style.display = 'block';
       }
       
       if (elemento) {
@@ -364,7 +370,6 @@
         header.innerText = titulo;
       }
       
-      // Renderizado inteligente al entrar a la pestaña
       if (tabId === 'inventario') renderInventario();
       if (tabId === 'resumen') renderResumen();
 
@@ -470,5 +475,4 @@
 
       filtrados.forEach(p => {
         const unidadTxt = p.tipo === 'unidad' ? 'u' : 'kg/lb';
-        const ganancia = p.precio - p.costo;
-      
+        const ganancia = p.precio - p.cos
