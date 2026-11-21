@@ -85,7 +85,7 @@
 
     /* Bottom Navigation */
     nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; border-top: 1px solid var(--border); height: 65px; z-index: 999; }
-    .nav-btn { flex: 1; background: transparent; color: var(--muted); border: none; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .nav-btn { flex: 1; background: transparent; color: var(--muted); border: none; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-weight: 500; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
     .nav-btn.active { color: var(--accent); font-weight: 700; border-top: 3px solid var(--accent); }
     .nav-btn span.icon { font-size: 1.2rem; }
   </style>
@@ -264,17 +264,17 @@
 
   </div>
 
-  <!-- NAVEGACIÓN INFERIOR -->
+  <!-- NAVEGACIÓN INFERIOR (Optimizada con pointerdown para móvil) -->
   <nav>
-    <button type="button" onclick="cambiarTab('ventas', 'Caja y Ventas', this)" class="nav-btn active">
+    <button type="button" class="nav-btn active" data-tab="ventas" data-title="Caja y Ventas">
       <span class="icon">💰</span>
       <span>Caja</span>
     </button>
-    <button type="button" onclick="cambiarTab('inventario', 'Inventario y Precios', this)" class="nav-btn">
+    <button type="button" class="nav-btn" data-tab="inventario" data-title="Inventario y Precios">
       <span class="icon">📦</span>
       <span>Inventario</span>
     </button>
-    <button type="button" onclick="cambiarTab('resumen', 'Resumen y Datos', this)" class="nav-btn">
+    <button type="button" class="nav-btn" data-tab="resumen" data-title="Resumen y Datos">
       <span class="icon">📊</span>
       <span>Resumen</span>
     </button>
@@ -325,10 +325,26 @@
 
     function actualizarTodo() {
       renderSelectProductos();
-      renderInventario();
       renderMovimientosHoy();
+      // Solo actualizamos inventario y resumen si estamos en esas pestañas o en segundo plano seguro
+      renderInventario();
       renderResumen();
     }
+
+    // Configuración ultra rápida de pestañas para móviles y APKs
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarDB();
+
+      const botonesNav = document.querySelectorAll('.nav-btn');
+      botonesNav.forEach(btn => {
+        btn.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          const tabId = btn.getAttribute('data-tab');
+          const titulo = btn.getAttribute('data-title');
+          cambiarTab(tabId, titulo, btn);
+        });
+      });
+    });
 
     function cambiarTab(tabId, titulo, elemento) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -348,6 +364,10 @@
         header.innerText = titulo;
       }
       
+      // Renderizado inteligente al entrar a la pestaña
+      if (tabId === 'inventario') renderInventario();
+      if (tabId === 'resumen') renderResumen();
+
       window.scrollTo(0, 0);
     }
 
@@ -451,22 +471,4 @@
       filtrados.forEach(p => {
         const unidadTxt = p.tipo === 'unidad' ? 'u' : 'kg/lb';
         const ganancia = p.precio - p.costo;
-        const margen = p.precio > 0 ? ((ganancia / p.precio) * 100).toFixed(0) : 0;
-        const bajoStock = p.stock <= (p.tipo === 'unidad' ? 3 : 1);
-
-        contenedor.innerHTML += `
-          <div class="item-card">
-            <div class="item-header">
-              <div>
-                <div class="item-title">${p.nombre}</div>
-                <div style="font-size:0.85rem; color:var(--primary); font-weight:600; margin-top:2px;">
-                  Venta: $${Math.round(p.precio)} / ${unidadTxt}
-                </div>
-              </div>
-              <span class="badge ${bajoStock ? 'badge-low' : 'badge-ok'}">
-                Stock: ${p.stock} ${unidadTxt}
-              </span>
-            </div>
-            <div class="item-details">
-              <span>Costo: $${Math.round(p.costo)}</span>
       
