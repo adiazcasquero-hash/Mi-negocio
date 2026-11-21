@@ -244,7 +244,7 @@
           </div>
           <div class="metric-box full">
             <div class="metric-label">Ganancia Neta Acumulada</div>
-            <div class="metric-val" id="tot-ganancia">$0</div>
+            <div class="metric-val val-green" id="tot-ganancia">$0</div>
           </div>
         </div>
       </div>
@@ -264,17 +264,17 @@
 
   </div>
 
-  <!-- NAVEGACIÓN INFERIOR (Con eventos directos onclick para máxima compatibilidad con APKs) -->
+  <!-- NAVEGACIÓN INFERIOR FORZADA -->
   <nav>
-    <button type="button" class="nav-btn active" id="btn-tab-ventas" onclick="cambiarTab('ventas', 'Caja y Ventas', this)">
+    <button type="button" class="nav-btn active" id="nav-ventas" onclick="cambiarTab('ventas', 'Caja y Ventas', this)">
       <span class="icon">💰</span>
       <span>Caja</span>
     </button>
-    <button type="button" class="nav-btn" id="btn-tab-inventario" onclick="cambiarTab('inventario', 'Inventario y Precios', this)">
+    <button type="button" class="nav-btn" id="nav-inventario" onclick="cambiarTab('inventario', 'Inventario y Precios', this)">
       <span class="icon">📦</span>
       <span>Inventario</span>
     </button>
-    <button type="button" class="nav-btn" id="btn-tab-resumen" onclick="cambiarTab('resumen', 'Resumen y Datos', this)">
+    <button type="button" class="nav-btn" id="nav-resumen" onclick="cambiarTab('resumen', 'Resumen y Datos', this)">
       <span class="icon">📊</span>
       <span>Resumen</span>
     </button>
@@ -330,42 +330,52 @@
       renderResumen();
     }
 
-    // Inicialización automática al abrir la app
     window.onload = function() {
       cargarDB();
     };
 
+    // FUNCIÓN DE CAMBIO DE PESTAÑA BLINDADA Y FORZADA CON TIMEOUT PARA APKs
     function cambiarTab(tabId, titulo, elemento) {
-      // Ocultar todas las pestañas de forma absoluta
-      document.querySelectorAll('.tab-content').forEach(el => {
+      // 1. Ocultar todas las pestañas de forma agresiva
+      const tabs = document.querySelectorAll('.tab-content');
+      tabs.forEach(el => {
         el.classList.remove('active');
-        el.style.display = 'none';
+        el.style.cssText = 'display: none !important;';
       });
       
-      // Quitar la clase active de todos los botones
-      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      // 2. Quitar activo de los botones
+      const botones = document.querySelectorAll('.nav-btn');
+      botones.forEach(el => el.classList.remove('active'));
       
-      // Mostrar la pestaña seleccionada
-      const targetTab = document.getElementById('tab-' + tabId);
+      // 3. Mostrar la pestaña elegida a la fuerza
+      const targetTab = document.getElementById('tab-embebido-' + tabId) || document.getElementById('tab-' + tabId);
       if (targetTab) {
         targetTab.classList.add('active');
-        targetTab.style.display = 'block';
+        targetTab.style.cssText = 'display: block !important;';
       }
       
-      // Activar el botón correspondiente
+      // 4. Activar botón tocado
       if (elemento) {
         elemento.classList.add('active');
       }
       
-      // Cambiar el título del header
+      // 5. Cambiar título
       const header = document.getElementById('header-title');
       if (header) {
         header.innerText = titulo;
       }
       
-      // Renderizar datos específicos según la pestaña
-      if (tabId === 'inventario') renderInventario();
-      if (tabId === 'resumen') renderResumen();
+      // 6. Forzar renderizado mediante un pequeño retraso de seguridad (clave para WebViews lentos)
+      setTimeout(() => {
+        if (tabId === 'inventario') {
+          renderInventario();
+        } else if (tabId === 'resumen') {
+          renderResumen();
+        } else if (tabId === 'ventas') {
+          renderSelectProductos();
+          renderMovimientosHoy();
+        }
+      }, 10);
 
       window.scrollTo(0, 0);
     }
@@ -420,6 +430,7 @@
       document.getElementById('form-prod-title').innerText = "Editando: " + p.nombre;
       document.getElementById('btn-cancelar-edicion').style.display = "block";
       calcularMargenPreview();
+      cambiarTab('inventario', 'Inventario y Precios', document.getElementById('nav-inventario'));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -460,14 +471,4 @@
       const filtro = inputBuscar ? inputBuscar.value.toLowerCase() : "";
       contenedor.innerHTML = "";
 
-      const filtrados = db.productos.filter(p => p.nombre.toLowerCase().includes(filtro));
-
-      if (filtrados.length === 0) {
-        contenedor.innerHTML = `<p style="text-align:center; color:var(--muted); margin-top:20px;">No hay productos registrados.</p>`;
-        return;
-      }
-
-      filtrados.forEach(p => {
-        const unidadTxt = p.tipo === 'unidad' ? 'u' : 'kg/lb';
-        const ganancia = p.precio - p.costo;
-        con
+ 
