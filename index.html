@@ -117,7 +117,7 @@
           </div>
           <div class="form-group">
             <label>Subtotal Artículo</label>
-            <input type="text" id="venta-subtotal" readonly value="$0.00" style="background: #f8fafc; font-weight: bold;">
+            <input type="text" id="venta-subtotal" readonly value="$0" style="background: #f8fafc; font-weight: bold;">
           </div>
         </div>
         <button class="btn-primary" onclick="agregarAlCarrito()">+ Agregar a la Compra</button>
@@ -128,7 +128,7 @@
           <div id="lista-carrito"></div>
           <div class="cart-total-row">
             <span>Total a Cobrar:</span>
-            <span id="carrito-total">$0.00</span>
+            <span id="carrito-total">$0</span>
           </div>
           <div class="row" style="margin-top: 10px;">
             <button class="btn-success" onclick="confirmarVentaCompleta()">Cobrar Todo</button>
@@ -146,7 +146,7 @@
           </div>
           <div class="form-group" style="flex: 1;">
             <label>Monto</label>
-            <input type="number" id="gasto-monto" step="any" min="0.01" placeholder="0.00">
+            <input type="number" id="gasto-monto" step="any" min="0.01" placeholder="0">
           </div>
         </div>
         <button class="btn-danger" onclick="registrarGasto()">Anotar Gasto</button>
@@ -185,16 +185,16 @@
         <div class="row">
           <div class="form-group">
             <label>Costo Compra (c/u)</label>
-            <input type="number" id="prod-costo" step="any" min="0" placeholder="0.00" oninput="calcularMargenPreview()">
+            <input type="number" id="prod-costo" step="any" min="0" placeholder="0" oninput="calcularMargenPreview()">
           </div>
           <div class="form-group">
             <label>Precio Venta (c/u)</label>
-            <input type="number" id="prod-precio" step="any" min="0" placeholder="0.00" oninput="calcularMargenPreview()">
+            <input type="number" id="prod-precio" step="any" min="0" placeholder="0" oninput="calcularMargenPreview()">
           </div>
         </div>
         
         <div class="preview-box" id="margen-preview">
-          <span>Ganancia: $0.00</span>
+          <span>Ganancia: $0</span>
           <span>Margen: 0%</span>
         </div>
 
@@ -218,15 +218,15 @@
         <div class="metrics">
           <div class="metric-box">
             <div class="metric-label">Ingresos Brutos</div>
-            <div class="metric-val" id="hoy-ingresos">$0.00</div>
+            <div class="metric-val" id="hoy-ingresos">$0</div>
           </div>
           <div class="metric-box">
             <div class="metric-label">Gastos</div>
-            <div class="metric-val val-red" id="hoy-gastos">$0.00</div>
+            <div class="metric-val val-red" id="hoy-gastos">$0</div>
           </div>
           <div class="metric-box full">
             <div class="metric-label">Ganancia Neta Real (Hoy)</div>
-            <div class="metric-val val-green" id="hoy-ganancia">$0.00</div>
+            <div class="metric-val val-green" id="hoy-ganancia">$0</div>
           </div>
         </div>
       </div>
@@ -236,15 +236,15 @@
         <div class="metrics">
           <div class="metric-box">
             <div class="metric-label">Ventas Totales</div>
-            <div class="metric-val" id="tot-ingresos">$0.00</div>
+            <div class="metric-val" id="tot-ingresos">$0</div>
           </div>
           <div class="metric-box">
             <div class="metric-label">Valor en Inventario</div>
-            <div class="metric-val" id="tot-valor-inv">$0.00</div>
+            <div class="metric-val" id="tot-valor-inv">$0</div>
           </div>
           <div class="metric-box full">
             <div class="metric-label">Ganancia Neta Acumulada</div>
-            <div class="metric-val val-green" id="tot-ganancia">$0.00</div>
+            <div class="metric-val val-green" id="tot-ganancia">$0</div>
           </div>
         </div>
       </div>
@@ -343,9 +343,9 @@
       const costo = parseFloat(document.getElementById('prod-costo').value) || 0;
       const precio = parseFloat(document.getElementById('prod-precio').value) || 0;
       const ganancia = precio - costo;
-      const margen = precio > 0 ? ((ganancia / precio) * 100).toFixed(1) : 0;
+      const margen = precio > 0 ? ((ganancia / precio) * 100).toFixed(0) : 0;
       document.getElementById('margen-preview').innerHTML = `
-        <span>Ganancia: $${ganancia.toFixed(2)}</span>
+        <span>Ganancia: $${Math.round(ganancia)}</span>
         <span>Margen: ${margen}%</span>
       `;
     }
@@ -442,7 +442,7 @@
               <div>
                 <div class="item-title">${p.nombre}</div>
                 <div style="font-size:0.85rem; color:var(--primary); font-weight:600; margin-top:2px;">
-                  Venta: $${p.precio.toFixed(2)} / ${unidadTxt}
+                  Venta: $${Math.round(p.precio)} / ${unidadTxt}
                 </div>
               </div>
               <span class="badge ${bajoStock ? 'badge-low' : 'badge-ok'}">
@@ -450,8 +450,8 @@
               </span>
             </div>
             <div class="item-details">
-              <span>Costo: $${p.costo.toFixed(2)}</span>
-              <span style="color:var(--success); font-weight:600;">Ganas: $${ganancia.toFixed(2)} (${margen}%)</span>
+              <span>Costo: $${Math.round(p.costo)}</span>
+              <span style="color:var(--success); font-weight:600;">Ganas: $${Math.round(ganancia)} (${margen}%)</span>
             </div>
             <div class="item-actions">
               <button class="btn-outline btn-sm" onclick="sumarStockRapido('${p.id}')">+ Stock</button>
@@ -463,279 +463,4 @@
       });
     }
 
-    function renderSelectProductos() {
-      const select = document.getElementById('venta-producto');
-      const valActual = select.value;
-      select.innerHTML = '<option value="">-- Elige un producto --</option>';
-      db.productos.forEach(p => {
-        const unidadTxt = p.tipo === 'unidad' ? 'u' : 'kg/lb';
-        select.innerHTML += `<option value="${p.id}">${p.nombre} ($${p.precio.toFixed(2)} / ${unidadTxt})</option>`;
-      });
-      select.value = valActual;
-    }
-
-    function actualizarInfoVenta() {
-      const id = document.getElementById('venta-producto').value;
-      const info = document.getElementById('venta-stock-info');
-      const labelCant = document.getElementById('label-cantidad-venta');
-      const p = db.productos.find(prod => prod.id === id);
-
-      if (p) {
-        const unidadTxt = p.tipo === 'unidad' ? 'unidades' : 'kg / lb';
-        info.innerText = `Disponible: ${p.stock} ${unidadTxt} | Precio: $${p.precio.toFixed(2)}`;
-        labelCant.innerText = p.tipo === 'unidad' ? 'Cantidad (Unidades)' : 'Peso (ej. 0.5, 1.25)';
-      } else {
-        info.innerText = "";
-        labelCant.innerText = "Cantidad";
-      }
-      calcularSubtotalItem();
-    }
-
-    function calcularSubtotalItem() {
-      const id = document.getElementById('venta-producto').value;
-      const cant = parseFloat(document.getElementById('venta-cantidad').value) || 0;
-      const p = db.productos.find(prod => prod.id === id);
-      const total = p ? (p.precio * cant) : 0;
-      document.getElementById('venta-subtotal').value = `$${total.toFixed(2)}`;
-    }
-
-    function agregarAlCarrito() {
-      const id = document.getElementById('venta-producto').value;
-      const cant = parseFloat(document.getElementById('venta-cantidad').value);
-      const p = db.productos.find(prod => prod.id === id);
-
-      if (!p || isNaN(cant) || cant <= 0) {
-        alert("Selecciona un producto y una cantidad válida.");
-        return;
-      }
-
-      const enCarrito = carrito.filter(item => item.prodId === id).reduce((acc, item) => acc + item.cantidad, 0);
-      if ((cant + enCarrito) > p.stock) {
-        if (!confirm(`Solo tienes ${p.stock} en inventario (y llevas ${enCarrito} en el carrito). ¿Agregar igual?`)) return;
-      }
-
-      const subtotal = parseFloat((p.precio * cant).toFixed(2));
-      const costoTotal = parseFloat((p.costo * cant).toFixed(2));
-      const ganancia = parseFloat((subtotal - costoTotal).toFixed(2));
-      const unidadTxt = p.tipo === 'unidad' ? 'u' : 'kg/lb';
-
-      carrito.push({
-        itemId: Date.now().toString() + Math.random(),
-        prodId: p.id,
-        nombre: p.nombre,
-        cantidad: cant,
-        unidad: unidadTxt,
-        subtotal: subtotal,
-        ganancia: ganancia
-      });
-
-      document.getElementById('venta-cantidad').value = "";
-      document.getElementById('venta-subtotal').value = "$0.00";
-      renderCarrito();
-    }
-
-    function quitarDelCarrito(itemId) {
-      carrito = carrito.filter(item => item.itemId !== itemId);
-      renderCarrito();
-    }
-
-    function vaciarCarrito() {
-      carrito = [];
-      renderCarrito();
-    }
-
-    function renderCarrito() {
-      const contenedor = document.getElementById('contenedor-carrito');
-      const lista = document.getElementById('lista-carrito');
-      const totalSpan = document.getElementById('carrito-total');
-
-      if (carrito.length === 0) {
-        contenedor.style.display = "none";
-        return;
-      }
-
-      contenedor.style.display = "block";
-      lista.innerHTML = "";
-      let totalGeneral = 0;
-
-      carrito.forEach(item => {
-        totalGeneral += item.subtotal;
-        lista.innerHTML += `
-          <div class="cart-item">
-            <span><strong>${item.cantidad} ${item.unidad}</strong> x ${item.nombre}</span>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-weight:600;">$${item.subtotal.toFixed(2)}</span>
-              <button onclick="quitarDelCarrito('${item.itemId}')" style="background:none; color:var(--danger); width:auto; padding:2px 6px;">✕</button>
-            </div>
-          </div>
-        `;
-      });
-
-      totalSpan.innerText = `$${totalGeneral.toFixed(2)}`;
-    }
-
-    function confirmarVentaCompleta() {
-      if (carrito.length === 0) return;
-
-      let totalMonto = 0;
-      let totalGanancia = 0;
-      let descripciones = [];
-
-      carrito.forEach(item => {
-        totalMonto += item.subtotal;
-        totalGanancia += item.ganancia;
-        descripciones.push(`${item.cantidad}${item.unidad} ${item.nombre}`);
-
-        const p = db.productos.find(prod => prod.id === item.prodId);
-        if (p) {
-          p.stock = Math.max(0, parseFloat((p.stock - item.cantidad).toFixed(3)));
-        }
-      });
-
-      db.movimientos.unshift({
-        id: Date.now().toString(),
-        fecha: new Date().toISOString().split('T')[0],
-        hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        tipo: 'venta',
-        descripcion: descripciones.join(', '),
-        monto: parseFloat(totalMonto.toFixed(2)),
-        ganancia: parseFloat(totalGanancia.toFixed(2))
-      });
-
-      carrito = [];
-      renderCarrito();
-      actualizarInfoVenta();
-      guardarDB();
-    }
-
-    function registrarGasto() {
-      const desc = document.getElementById('gasto-desc').value.trim();
-      const monto = parseFloat(document.getElementById('gasto-monto').value);
-
-      if (!desc || isNaN(monto) || monto <= 0) {
-        alert("Ingresa una descripción y un monto válido.");
-        return;
-      }
-
-      db.movimientos.unshift({
-        id: Date.now().toString(),
-        fecha: new Date().toISOString().split('T')[0],
-        hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        tipo: 'gasto',
-        descripcion: desc,
-        monto: monto,
-        ganancia: -monto
-      });
-
-      document.getElementById('gasto-desc').value = "";
-      document.getElementById('gasto-monto').value = "";
-      guardarDB();
-    }
-
-    function eliminarMovimiento(id) {
-      if (confirm("¿Eliminar este registro?")) {
-        db.movimientos = db.movimientos.filter(m => m.id !== id);
-        guardarDB();
-      }
-    }
-
-    function renderMovimientosHoy() {
-      const contenedor = document.getElementById('lista-movimientos-hoy');
-      const hoy = new Date().toISOString().split('T')[0];
-      const movsHoy = db.movimientos.filter(m => m.fecha === hoy);
-
-      if (movsHoy.length === 0) {
-        contenedor.innerHTML = `<p style="color: var(--muted); font-size: 0.9rem;">Sin movimientos hoy.</p>`;
-        return;
-      }
-
-      contenedor.innerHTML = "";
-      movsHoy.forEach(m => {
-        const esVenta = m.tipo === 'venta';
-        contenedor.innerHTML += `
-          <div class="history-item">
-            <div>
-              <div style="font-weight: 500;">${m.descripcion}</div>
-              <div class="history-sub">${m.hora} • ${esVenta ? `Ganancia: $${m.ganancia.toFixed(2)}` : 'Gasto'}</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-weight: 700; color: ${esVenta ? 'var(--success)' : 'var(--danger)'};">
-                ${esVenta ? '+' : '-'}$${m.monto.toFixed(2)}
-              </span>
-              <button onclick="eliminarMovimiento('${m.id}')" style="background:none; color:var(--muted); width:auto; padding:4px;">✕</button>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    function renderResumen() {
-      const hoy = new Date().toISOString().split('T')[0];
-      let hoyIngresos = 0, hoyGastos = 0, hoyGanancia = 0;
-      let totIngresos = 0, totGanancia = 0;
-
-      db.movimientos.forEach(m => {
-        if (m.tipo === 'venta') {
-          totIngresos += m.monto;
-          totGanancia += m.ganancia;
-          if (m.fecha === hoy) {
-            hoyIngresos += m.monto;
-            hoyGanancia += m.ganancia;
-          }
-        } else if (m.tipo === 'gasto') {
-          totGanancia -= m.monto;
-          if (m.fecha === hoy) {
-            hoyGastos += m.monto;
-            hoyGanancia -= m.monto;
-          }
-        }
-      });
-
-      const valorInventario = db.productos.reduce((acc, p) => acc + (p.costo * p.stock), 0);
-
-      document.getElementById('hoy-ingresos').innerText = `$${hoyIngresos.toFixed(2)}`;
-      document.getElementById('hoy-gastos').innerText = `$${hoyGastos.toFixed(2)}`;
-      document.getElementById('hoy-ganancia').innerText = `$${hoyGanancia.toFixed(2)}`;
-
-      document.getElementById('tot-ingresos').innerText = `$${totIngresos.toFixed(2)}`;
-      document.getElementById('tot-valor-inv').innerText = `$${valorInventario.toFixed(2)}`;
-      document.getElementById('tot-ganancia').innerText = `$${totGanancia.toFixed(2)}`;
-    }
-
-    function exportarDatos() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-      const downloadAnchor = document.createElement('a');
-      const fecha = new Date().toISOString().split('T')[0];
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `respaldo_negocio_${fecha}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function importarDatos(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const datosImportados = JSON.parse(e.target.result);
-          if (datosImportados.productos && datosImportados.movimientos) {
-            db = datosImportados;
-            guardarDB();
-            alert("¡Respaldo restaurado con éxito!");
-          } else {
-            alert("El archivo no tiene el formato correcto.");
-          }
-        } catch (err) {
-          alert("Error al leer el archivo.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    cargarDB();
-  </script>
-</body>
-</html>
-    
+    // Funciones auxiliares de render
