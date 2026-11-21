@@ -244,7 +244,7 @@
           </div>
           <div class="metric-box full">
             <div class="metric-label">Ganancia Neta Acumulada</div>
-            <div class="metric-val" id="tot-ganancia">$0</div>
+            <div class="metric-val val-green" id="tot-ganancia">$0</div>
           </div>
         </div>
       </div>
@@ -299,15 +299,27 @@
     let carrito = [];
 
     function cargarDB() {
-      const guardado = storageSeguro.getItem('mi_negocio_db');
-      if (guardado) {
-        try { db = JSON.parse(guardado); } catch (err) { console.error(err); }
+      try {
+        const guardado = storageSeguro.getItem('mi_negocio_db');
+        if (guardado) {
+          const parsed = JSON.parse(guardado);
+          if (parsed && typeof parsed === 'object') {
+            db.productos = Array.isArray(parsed.productos) ? parsed.productos : [];
+            db.movimientos = Array.isArray(parsed.movimientos) ? parsed.movimientos : [];
+          }
+        }
+      } catch (err) {
+        console.error("Error al cargar base de datos:", err);
       }
       actualizarTodo();
     }
 
     function guardarDB() {
-      storageSeguro.setItem('mi_negocio_db', JSON.stringify(db));
+      try {
+        storageSeguro.setItem('mi_negocio_db', JSON.stringify(db));
+      } catch (err) {
+        console.error("Error al guardar base de datos:", err);
+      }
       actualizarTodo();
     }
 
@@ -344,10 +356,13 @@
       const precio = parseFloat(document.getElementById('prod-precio').value) || 0;
       const ganancia = precio - costo;
       const margen = precio > 0 ? ((ganancia / precio) * 100).toFixed(0) : 0;
-      document.getElementById('margen-preview').innerHTML = `
-        <span>Ganancia: $${Math.round(ganancia)}</span>
-        <span>Margen: ${margen}%</span>
-      `;
+      const preview = document.getElementById('margen-preview');
+      if (preview) {
+        preview.innerHTML = `
+          <span>Ganancia: $${Math.round(ganancia)}</span>
+          <span>Margen: ${margen}%</span>
+        `;
+      }
     }
 
     function guardarProducto() {
@@ -420,7 +435,10 @@
 
     function renderInventario() {
       const contenedor = document.getElementById('lista-inventario');
-      const filtro = document.getElementById('buscar-prod').value.toLowerCase();
+      const inputBuscar = document.getElementById('buscar-prod');
+      if (!contenedor) return;
+      
+      const filtro = inputBuscar ? inputBuscar.value.toLowerCase() : "";
       contenedor.innerHTML = "";
 
       const filtrados = db.productos.filter(p => p.nombre.toLowerCase().includes(filtro));
@@ -451,17 +469,4 @@
             </div>
             <div class="item-details">
               <span>Costo: $${Math.round(p.costo)}</span>
-              <span style="color:var(--success); font-weight:600;">Ganas: $${Math.round(ganancia)} (${margen}%)</span>
-            </div>
-            <div class="item-actions">
-              <button class="btn-outline btn-sm" onclick="sumarStockRapido('${p.id}')">+ Stock</button>
-              <button class="btn-outline btn-sm" onclick="editarProducto('${p.id}')">Editar</button>
-              <button class="btn-danger btn-sm" onclick="eliminarProducto('${p.id}')">Borrar</button>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    function renderSelectProductos() {
-      const select
+      
