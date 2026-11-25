@@ -126,8 +126,8 @@
             <button class="btn-outline" style="flex: 0.5;" onclick="vaciarCarrito()">Limpiar</button>
           </div>
         </div>
-      </div>
-      <div class="card">
+              </div>
+        <div class="card">
         <h2>Ingreso de Efectivo / Fondo de Caja</h2>
         <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 8px;">
           * Registra dinero para dar cambio o aportes propios. Suma al efectivo físico en gaveta sin alterar tus ganancias de ventas.
@@ -301,8 +301,8 @@
       <span class="icon">📊</span>
       <span>Resumen</span>
     </button>
-  </nav>
-  <script>
+              </nav>
+                                  <script>
     let memoriaTemporal = {};
     const storageSeguro = {
       getItem: function(key) {
@@ -552,7 +552,7 @@
         subtotalInput.value = "$" + Math.round(sub);
       }
     };
-    window.agregarAlCarrito = function() {
+                                       window.agregarAlCarrito = function() {
       const id = document.getElementById('venta-producto').value;
       const cantInput = document.getElementById('venta-cantidad');
       const cant = cantInput ? parseFloat(cantInput.value) : NaN;
